@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!--[if IE 6 ]> <html class="ie6 lte_ie6 lte_ie7 lte_ie8 lte_ie9"> <![endif]-->
+<!--[if lte IE 6 ]> <html class="lte_ie6 lte_ie7 lte_ie8 lte_ie9"> <![endif]-->
+<!--[if lte IE 7 ]> <html class="lte_ie7 lte_ie8 lte_ie9"> <![endif]-->
+<!--[if lte IE 8 ]> <html class="lte_ie8 lte_ie9"> <![endif]-->
+<!--[if lte IE 9 ]> <html class="lte_ie9"> <![endif]-->
+<!--[if (gte IE 10)|!(IE)]><!--><html><!--<![endif]-->
+ <head>
+    <title>上下班登记</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=gbk" />
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=10,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/theme/15/style.css" />
+    <!--[if lte IE 8]>
+        <script type="text/javascript" src="/static/js/ccorrect_btn.js"></script>
+    <![endif]-->
+
+<script type="text/javascript" >
+   var MYOA_JS_SERVER = "";
+   var MYOA_STATIC_SERVER = "";
+</script>
+</head>
+
+
+
+<script language="JavaScript">
+function remark(REGISTER_TYPE,REGISTER_TIME)
+{
+  URL="remark.php?REGISTER_TYPE="+REGISTER_TYPE+"&REGISTER_TIME="+REGISTER_TIME;
+  myleft=(screen.availWidth-650)/2;
+  window.open(URL,"formul_edit","height=250,width=450,status=0,toolbar=no,menubar=no,location=no,scrollbars=no,top=150,left="+myleft+",resizable=yes");
+}
+</script>
+<body class="bodycolor">
+
+
+<!----  正常班上下班登记 ---->
+<table border="0" width="100%" cellspacing="0" cellpadding="3" class="small" align="center">
+  <tr>
+    <td class="Big"><img src="/static/images/menu/attendance.gif" WIDTH="22" HEIGHT="20" align="absmiddle"><span class="big3"> 今日上下班登记 (软件班次[9:00-18:00]       当前时间：<span id="timetable"></span>)</span><br>
+<SCRIPT LANGUAGE="JavaScript">
+var OA_TIME1 = new Date(2016,6,22,10,30,25);
+function get_time()
+{
+  window.setTimeout( "get_time()", 1000 );
+
+  timestr=OA_TIME1.toLocaleString();
+  document.getElementById("timetable").innerHTML=timestr;
+  OA_TIME1.setSeconds(OA_TIME1.getSeconds()+1);
+}
+
+get_time();
+
+</SCRIPT>
+    </td>
+  </tr>
+</table>
+
+<table class="MessageBox" align="center" width="500" cellpadding="0" cellspacing="0">
+   <tr class="head-no-title">
+      <td class="left"></td>
+      <td class="center">
+      </td>
+      <td class="right"></td>
+   </tr>
+   <tr class="msg">
+      <td class="left"></td>
+      <td class="center info">
+         <div class="msg-content">规定时间之前 540 分钟到之后 900 分钟这段时间可进行上班登记，规定时间之前 510 分钟到之后 1260 分钟这段时间可进行下班登记</div>
+      </td>
+      <td class="right"></td>
+   </tr>
+   <tr class="foot">
+      <td class="left"></td>
+      <td class="center"><b></b></td>
+      <td class="right"></td>
+   </tr>
+</table>
+<table class="TableList" align="center" width="95%">
+    <tr class="TableHeader">
+      <td nowrap align="center">登记次序</td>
+      <td nowrap align="center">登记类型</td>
+      <td nowrap align="center">规定时间</td>
+      <td nowrap align="center">登记时间</td>
+      <td nowrap align="center">操作</td>
+    </tr>
+ <tr class="TableData">
+   <td nowrap align="center">第1次登记</td>
+   <td nowrap align="center">上班登记</td>
+   <td nowrap align="center">09:00:59</td>
+   <td nowrap align="center">08:39:20</td>
+   <td nowrap align="center">
+已考勤    <a href="javascript:remark('1','2016-07-22 08:39:20');">说明情况</a>
+   </td>
+ </tr>
+
+ <tr class="TableData">
+   <td nowrap align="center">第2次登记</td>
+   <td nowrap align="center">下班登记</td>
+   <td nowrap align="center">18:00:00</td>
+   <td nowrap align="center">未登记</td>
+   <td nowrap align="center">
+       <a href="submit.php?REGISTER_TYPE=2">下班登记</a>
+   </td>
+ </tr>
+
+
+</table>
+
+</body>
+</html>
