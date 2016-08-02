@@ -4,11 +4,11 @@
 
 ```
 $ npm install
-$ npm run debug or npm start
+$ npm run start // 运行正式环境
 $ npm run build // 生成app
 ```
 
- ## setting
+## setting
 
 setting `clock/config.js`
 
@@ -26,6 +26,20 @@ setting `clock/config.js`
     "time":"1",
     "logPath": "log"  
     }
+
+## debug
+模拟登陆接口，测试
+```
+#### terminal1，开启一个终端 ####
+$ cd clockoa/test_server
+$ npm install
+$ node server.js
+
+#### terminal2，再新开启一个终端 ####
+$ cd clockoa
+$ npm install
+$ npm run debug
+```
 
 ## package app
 `npm run build`不一定能打包，下载速度太慢。
