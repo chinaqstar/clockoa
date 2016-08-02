@@ -1,6 +1,6 @@
 var config = {
-  "username":"abc",
-  "pwd":"456",
+  "username":"qbc",
+  "pwd":"abc",
   "time": "0",
   "logPath": "log",
   "onDutyUrl": "http://localhost:9000/register?REGISTER_TYPE=1",

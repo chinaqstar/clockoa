@@ -88,6 +88,29 @@
     .danger {
       color: #d9534f;
     }
+
+    .close {
+      position: absolute;
+      font-size: 20px;
+      background-color: #a9a9a9;
+      width: 265px;
+    }
+
+    .auto-clockin-time, .auto-clockout-time {
+      display: inline-block;
+      width: 113px;
+      border: none;
+      background-color: #eee;
+      color: #aaa;
+    }
+
+    .auto-clockout-time:hover, .auto-clockin-time:hover,
+    .auto-clockout-time:active, .auto-clockin-time:active,
+    .auto-clockout-time:focus, .auto-clockin-time:focus {
+      outline: 0;
+      text-decoration: none;
+      border-bottom: 1px solid;
+    }
   </style>
 </head>
 
@@ -107,14 +130,12 @@
       <div class="progressbar clockin-pb"></div>
       <div class="warning-time">
         <span>自动打卡：</span>
-        <span class="clockin-auto-time">08:58:00</span>
+        <input class="auto-clockin-time" value="08:58:00"></input>
       </div>
     </div>
 
   </div>
-
   <hr>
-
   <div class="clock-box">
     <button class="btn clockout-btn default">下</button>
     <div class="box-context">
@@ -126,10 +147,13 @@
       <div class="progressbar clockout-pb"></div>
       <div class="warning-time">
         <span>自动打卡：</span>
-        <span class="clockout-auto-time">18:01:00</span>
-        <!-- <span>08:48:12</span> -->
+        <input class="auto-clockout-time" value="18:02:00"></input>
       </div>
     </div>
+  </div>
+  <hr>
+  <div class="clock-box">
+    <button class="btn default close">退</button>
   </div>
 </body>
 
@@ -137,9 +161,11 @@
 
 <script>
   const CronJob = require('cron').CronJob;
+  const CronTime = require('cron').CronTime;
   const check = require('./clock/src/checkStatus.js');
   const reg = require('./clock/src/index.js');
   const timeCheck = require('./clock/src/timeCheck.js');
+  const moment = require('moment');
 
   const registered = (name, time) => {
     $(`.${name}-btn`)
@@ -209,15 +235,57 @@
     }).catch(console.log.bind(console));
   }
 
-  new CronJob('00 58 08 * * 1-5', function() {
+  const converTime = (time) => {
+    const cvt = moment(time, "hh:mm:ss");
+    const viewTime = cvt.format("HH:mm:ss");
+    const cronTime = cvt.format("ss mm HH");
+    return {
+      viewTime: viewTime,
+      cronTime: cronTime
+    }
+  }
+
+  const jobClockin = new CronJob('00 55 08 * * 1-5', function() {
     checkThenReg('clockin');
   }, null, true, 'Asia/Shanghai');
 
-  new CronJob('00 02 18 * * 1-5', function() {
+  const jobClockout = new CronJob('00 02 18 * * 1-5', function() {
     checkThenReg('clockout');
   }, null, true, 'Asia/Shanghai');
 
+  new CronJob('00 01 00 * * 1-5', function() {
+    reset('clockin');
+    reset('clockout');
+  }, null, true, 'Asia/Shanghai');
+
   $(document).ready(function() {
+
+    var DEFAULT_CLOCKIN_TIME = '08:55:00';
+    var DEFAULT_CLOCKOUT_TIME = '18:02:00';
+
+    var autoClockin = $('.auto-clockin-time');
+    var autoClockout = $('.auto-clockout-time');
+
+    // try {
+    //   var autoClockinTime = localStorage.getItem('auto-clockin-time');
+    //   var autoClockoutTime = localStorage.getItem('auto-clockout-time');
+
+    //   if(!autoClockinTime) {
+    //     localStorage.setItem('auto-clockin-time', DEFAULT_CLOCKIN_TIME);
+    //     autoClockin.val(DEFAULT_CLOCKIN_TIME);
+    //   } else {
+    //     autoClockin.val(autoClockinTime);
+    //   }
+    //   if(!autoClockoutTime) {
+    //     localStorage.setItem('auto-clockout-time', DEFAULT_CLOCKOUT_TIME);
+    //     autoClockout.val(DEFAULT_CLOCKOUT_TIME);
+    //   } else {
+    //     autoClockout.val(autoClockoutTime);
+    //   }
+    // } catch(e) {
+    //   alert(e);
+    // }
+
     checkThenRest();
 
     $('.clockin-btn').on('click', function(e) {
@@ -226,6 +294,24 @@
 
     $('.clockout-btn').on('click', function(e) {
       checkThenReg('clockout');
+    });
+
+    $('.close').on('click', function(e) {
+      window.close();
+    });
+
+    autoClockin.on('blur', function(e) {
+      const time = converTime(autoClockin.val());
+      // localStorage.setItem('auto-clockin-time', time.viewTime);
+      jobClockin.setTime(new CronTime(`${time.cronTime} * * 1-5`));
+      jobClockin.start();
+    });
+
+    autoClockout.on('blur', function(e) {
+      const time = converTime(autoClockout.val());
+      // localStorage.setItem('auto-clockout-time', time.viewTime);
+      jobClockout.setTime(new CronTime(`${time.cronTime} * * 1-5`));
+      jobClockout.start();
     });
   })
 </script>
