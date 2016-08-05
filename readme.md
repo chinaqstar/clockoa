@@ -27,18 +27,18 @@ setting `clock/config.js`
     "logPath": "log"  
     }
 
-## debug
-模拟登陆接口，测试
+## dev
+模拟登陆接口，开发用
 ```
 #### terminal1，开启一个终端 ####
-$ cd clockoa/test_server
+$ cd clockoa/dev_server
 $ npm install
 $ node server.js
 
 #### terminal2，再新开启一个终端 ####
 $ cd clockoa
 $ npm install
-$ npm run debug
+$ npm run dev
 ```
 
 ## package app

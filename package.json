@@ -19,6 +19,6 @@
   "scripts": {
     "build": "electron-packager . ClockOA --platform=darwin --arch=x64 --version=0.36.0 --icon=Icon.icns",
     "start": "NODE_ENV=production electron .",
-    "debug": "NODE_ENV=debug electron ."
+    "dev": "NODE_ENV=development electron ."
   }
 }

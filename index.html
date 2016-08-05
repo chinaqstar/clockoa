@@ -201,7 +201,7 @@
       }
 
       if(status.clockoutTime) {
-        registered('clockout', status.clockinTime);
+        registered('clockout', status.clockoutTime);
       } else {
         reset('clockout');
       }
@@ -253,7 +253,7 @@
     checkThenReg('clockout');
   }, null, true, 'Asia/Shanghai');
 
-  new CronJob('00 01 00 * * 1-5', function() {
+  new CronJob('00 01 00 * * 1-6', function() {
     reset('clockin');
     reset('clockout');
   }, null, true, 'Asia/Shanghai');
@@ -310,7 +310,7 @@
     autoClockout.on('blur', function(e) {
       const time = converTime(autoClockout.val());
       // localStorage.setItem('auto-clockout-time', time.viewTime);
-      jobClockout.setTime(new CronTime(`${time.cronTime} * * 1-5`));
+      jobClockout.setTime(new CronTime(`${time.cronTime} * * *`));
       jobClockout.start();
     });
   })
