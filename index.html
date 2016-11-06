@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -167,6 +167,34 @@
   const timeCheck = require('./clock/src/timeCheck.js');
   const moment = require('moment');
 
+  const DEFAULT_CLOCKIN_TIME = '08:55:00';
+  const DEFAULT_CLOCKOUT_TIME = '18:02:00';
+  // 打卡失败重新打卡次数
+  var reTimes = 0
+  const info = {
+    today: moment(new Date()).format("YYYY-MM-DD"),
+    timeFrom: DEFAULT_CLOCKIN_TIME,
+    timeTo: DEFAULT_CLOCKOUT_TIME
+  }
+  // 上班预设打卡时间 2016-11-16 08:55:00
+  Object.defineProperty(info, 'from', {
+    enumerable: true,
+    configurable: true,
+    get() {
+      return `${this.today} ${this.timeFrom}`
+    }
+  })
+
+  // 下班预设打卡时间 2016-11-16 18:02:00
+  Object.defineProperty(info, 'to', {
+    enumerable: true,
+    configurable: true,
+    get() {
+      return `${this.today} ${this.timeTo}`
+    }
+  })
+
+  // view，打卡之后
   const registered = (name, time) => {
     $(`.${name}-btn`)
       .addClass('success')
@@ -179,6 +207,7 @@
       .text(time);
   }
 
+  // view，重置之后
   const reset = (name) => {
     $(`.${name}-btn`)
       .removeClass('success')
@@ -191,17 +220,21 @@
       .text('未打卡');
   }
 
+  // 重置操作
   const checkThenRest = () => {
     check().then((status) => {
       status = status || {};
+      reTimes = 0;
       if(status.clockinTime) {
         registered('clockin', status.clockinTime);
+        info.clockin = true;
       } else {
         reset('clockin');
       }
 
       if(status.clockoutTime) {
         registered('clockout', status.clockoutTime);
+        info.clockout = true;
       } else {
         reset('clockout');
       }
@@ -209,13 +242,21 @@
     }).catch(console.log.bind(console));
   }
 
+  // 打卡操作
   const checkThenReg = (name) => {
     check().then((status) => {
       status = status || {};
+      if (reTimes >= 3) {
+        reTimes = 0
+        return 
+      }
       if (name === 'clockin') {
         if(status.clockinTime) {
           registered(name, status.clockinTime);
+          info.clockin = true;
+          reTimes = 0;
         } else {
+          reTimes++;
           reg('on').then(() => {
             checkThenReg(name);
           });
@@ -225,16 +266,19 @@
       if (name === 'clockout') {
         if(status.clockoutTime) {
           registered(name, status.clockoutTime);
+          info.clockout = true;
+          reTimes = 0;
         } else {
+          reTimes++;
           reg('off').then(() => {
             checkThenReg(name);
           });
         }
       }
-
     }).catch(console.log.bind(console));
   }
 
+  // 时间转换
   const converTime = (time) => {
     const cvt = moment(time, "hh:mm:ss");
     const viewTime = cvt.format("HH:mm:ss");
@@ -245,47 +289,42 @@
     }
   }
 
-  const jobClockin = new CronJob('00 55 08 * * 1-5', function() {
-    checkThenReg('clockin');
-  }, null, true, 'Asia/Shanghai');
+  // 每分钟判断一次，重置，上班打卡，下班打卡
+  const jobClock = new CronJob('0 */1 * * * *', function() {
+    const curDateTime = moment(new Date())
+    const today = curDateTime.format("YYYY-MM-DD")
 
-  const jobClockout = new CronJob('00 02 18 * * 1-5', function() {
-    checkThenReg('clockout');
-  }, null, true, 'Asia/Shanghai');
+    // 每天重置
+    if (info.today  !== today) {
+      reset('clockin');
+      reset('clockout');
+      reTimes = 0;
+      info.today = today;
+      info.clockin = false;
+      info.clockout = false;
+    }
 
-  new CronJob('00 01 00 * * 1-6', function() {
-    reset('clockin');
-    reset('clockout');
+    // 上班打卡
+    // TODO 最好在判断一下是否超过上班时间
+    if (!info.clockin && info.from && curDateTime.isAfter(info.from)) {
+      checkThenReg('clockin');
+      // info.clockin = true;
+      return
+    }
+
+    // 下班打卡
+    if (!info.clockout && info.to && curDateTime.isAfter(info.to)) {
+      checkThenReg('clockout');
+      // info.clockout = true;
+    }
   }, null, true, 'Asia/Shanghai');
 
   $(document).ready(function() {
 
-    var DEFAULT_CLOCKIN_TIME = '08:55:00';
-    var DEFAULT_CLOCKOUT_TIME = '18:02:00';
-
     var autoClockin = $('.auto-clockin-time');
     var autoClockout = $('.auto-clockout-time');
 
-    // try {
-    //   var autoClockinTime = localStorage.getItem('auto-clockin-time');
-    //   var autoClockoutTime = localStorage.getItem('auto-clockout-time');
-
-    //   if(!autoClockinTime) {
-    //     localStorage.setItem('auto-clockin-time', DEFAULT_CLOCKIN_TIME);
-    //     autoClockin.val(DEFAULT_CLOCKIN_TIME);
-    //   } else {
-    //     autoClockin.val(autoClockinTime);
-    //   }
-    //   if(!autoClockoutTime) {
-    //     localStorage.setItem('auto-clockout-time', DEFAULT_CLOCKOUT_TIME);
-    //     autoClockout.val(DEFAULT_CLOCKOUT_TIME);
-    //   } else {
-    //     autoClockout.val(autoClockoutTime);
-    //   }
-    // } catch(e) {
-    //   alert(e);
-    // }
-
+    // 重置
     checkThenRest();
 
     $('.clockin-btn').on('click', function(e) {
@@ -302,16 +341,20 @@
 
     autoClockin.on('blur', function(e) {
       const time = converTime(autoClockin.val());
-      // localStorage.setItem('auto-clockin-time', time.viewTime);
-      jobClockin.setTime(new CronTime(`${time.cronTime} * * 1-5`));
-      jobClockin.start();
+      if (!time.viewTime) {
+        time.viewTime = DEFAULT_CLOCKIN_TIME
+        autoClockin.val(time.viewTime)
+      }
+      info.timeFrom = time.viewTime
     });
 
     autoClockout.on('blur', function(e) {
       const time = converTime(autoClockout.val());
-      // localStorage.setItem('auto-clockout-time', time.viewTime);
-      jobClockout.setTime(new CronTime(`${time.cronTime} * * *`));
-      jobClockout.start();
+      if (!time.viewTime) {
+        time.viewTime = DEFAULT_CLOCKOUT_TIME
+        autoClockout.val(time.viewTime)
+      }
+      info.timeTo = time.viewTime
     });
   })
 </script>

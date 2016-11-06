@@ -1,12 +1,17 @@
 var config = {
-  "username":"123",
-  "pwd":"abc",
+  "username":"xxx",
+  "pwd":"xxxx",
+  "cookie": {
+    USER_NAME_COOKIE: "xxxx",
+    PHPSESSID: "xxxx",
+    OA_USER_ID: "xxx"
+  },
   "time": "0",
   "logPath": "log",
-  "onDutyUrl": "http://oa.dronggroup.com/general//attendance/personal/duty/submit.php?REGISTER_TYPE=1",
-  "offDutyUrl": "http://oa.dronggroup.com/general//attendance/personal/duty/submit.php?REGISTER_TYPE=2",
-  "checkUrl": "http://oa.dronggroup.com/general//attendance/personal/duty",
-  "loginUrl": "http://oa.dronggroup.com/logincheck.php",
+  "onDutyUrl": "http://xxx.xxx.xxx/general/attendance/personal/duty/submit.php?REGISTER_TYPE=1",
+  "offDutyUrl": "http://xxx.xxx.xxx/general/attendance/personal/duty/submit.php?REGISTER_TYPE=2",
+  "checkUrl": "http://xxx.xxx.xxx/general/attendance/personal/duty",
+  "loginUrl": "http://xxx.xxx.xxx/logincheck.php",
 }
 
 if(process.env.NODE_ENV === 'development') {
@@ -15,7 +20,5 @@ if(process.env.NODE_ENV === 'development') {
   config.checkUrl = "http://localhost:9000/duty";
   config.loginUrl = "http://localhost:9000/login";
 }
-
-console.log('config');
 
 module.exports = config;
