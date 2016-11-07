@@ -3,6 +3,7 @@
 ## run
 
 ```
+$ cp clock/config.js.example clock/config.js
 $ npm install
 $ npm run start // 运行正式环境
 $ npm run build // 生成app

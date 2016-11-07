@@ -278,17 +278,6 @@
     }).catch(console.log.bind(console));
   }
 
-  // 时间转换
-  const converTime = (time) => {
-    const cvt = moment(time, "hh:mm:ss");
-    const viewTime = cvt.format("HH:mm:ss");
-    const cronTime = cvt.format("ss mm HH");
-    return {
-      viewTime: viewTime,
-      cronTime: cronTime
-    }
-  }
-
   // 每分钟判断一次，重置，上班打卡，下班打卡
   const jobClock = new CronJob('0 */1 * * * *', function() {
     const curDateTime = moment(new Date())
@@ -340,21 +329,23 @@
     });
 
     autoClockin.on('blur', function(e) {
-      const time = converTime(autoClockin.val());
-      if (!time.viewTime) {
-        time.viewTime = DEFAULT_CLOCKIN_TIME
-        autoClockin.val(time.viewTime)
+      const time = moment(autoClockin.val() || 0, 'HH:mm:ss', true)
+      let timeStr = DEFAULT_CLOCKIN_TIME
+      if (time.isValid()) {
+        timeStr = time.format("HH:mm:ss")
       }
-      info.timeFrom = time.viewTime
+      autoClockin.val(timeStr)
+      info.timeFrom = timeStr
     });
 
     autoClockout.on('blur', function(e) {
-      const time = converTime(autoClockout.val());
-      if (!time.viewTime) {
-        time.viewTime = DEFAULT_CLOCKOUT_TIME
-        autoClockout.val(time.viewTime)
+      const time = moment(autoClockout.val() || 0, 'HH:mm:ss', true)
+      let timeStr = DEFAULT_CLOCKOUT_TIME
+      if (time.isValid()) {
+        timeStr = time.format("HH:mm:ss")
       }
-      info.timeTo = time.viewTime
+      autoClockout.val(timeStr)
+      info.timeTo = timeStr
     });
   })
 </script>
