@@ -330,7 +330,7 @@
 
     autoClockin.on('blur', function(e) {
       const time = moment(autoClockin.val() || 0, 'HH:mm:ss', true)
-      let timeStr = DEFAULT_CLOCKIN_TIME
+      var timeStr = DEFAULT_CLOCKIN_TIME
       if (time.isValid()) {
         timeStr = time.format("HH:mm:ss")
       }
@@ -340,7 +340,7 @@
 
     autoClockout.on('blur', function(e) {
       const time = moment(autoClockout.val() || 0, 'HH:mm:ss', true)
-      let timeStr = DEFAULT_CLOCKOUT_TIME
+      var timeStr = DEFAULT_CLOCKOUT_TIME
       if (time.isValid()) {
         timeStr = time.format("HH:mm:ss")
       }
