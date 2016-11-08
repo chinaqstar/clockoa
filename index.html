@@ -171,6 +171,9 @@
   const DEFAULT_CLOCKOUT_TIME = '18:02:00';
   // 打卡失败重新打卡次数
   var reTimes = 0
+  // 范围，设定打卡时间，随机范围为9分钟
+  var randomFrom = 540000
+  var randomTo = -540000
   const info = {
     today: moment(new Date()).format("YYYY-MM-DD"),
     timeFrom: DEFAULT_CLOCKIN_TIME,
@@ -240,7 +243,6 @@
         info.clockout = false;
         reset('clockout');
       }
-
     }).catch(console.log.bind(console));
   }
 
@@ -280,37 +282,19 @@
     }).catch(console.log.bind(console));
   }
 
-  // 每分钟判断一次，重置，上班打卡，下班打卡
-  const jobClock = new CronJob('0 */1 * * * *', function() {
-    const curDateTime = moment(new Date())
-    const today = curDateTime.format("YYYY-MM-DD")
-
-    // 每天重置
-    if (info.today  !== today) {
-      checkThenRest();
-      info.today = today;
-      // TODO 全部放在checkThenRest中了，之后可直接删除
-      // reset('clockin');
-      // reset('clockout');
-      // reTimes = 0;
-      // info.clockin = false;
-      // info.clockout = false;
-    }
-
-    // 上班打卡
-    // TODO 最好在判断一下是否超过上班时间
-    if (!info.clockin && info.from && curDateTime.isAfter(info.from)) {
-      checkThenReg('clockin');
-      // info.clockin = true;
-      return
-    }
-
-    // 下班打卡
-    if (!info.clockout && info.to && curDateTime.isAfter(info.to)) {
-      checkThenReg('clockout');
-      // info.clockout = true;
-    }
-  }, null, true, 'Asia/Shanghai');
+  /**
+   * 根据给定的区间，获取一个随机时间
+   * @param  {[type]} randomNum 随机数
+   * @param  {[type]} today     [description]
+   * @param  {[type]} time      [description]
+   * @return {[type]}           返回当前时间
+   */
+  const getRandomTime = (randomNum, today, time) => {
+    // 设置范围，随机一个时间
+    const random = Math.round(Math.random() * randomNum)
+    const unix = new Date(`${today} ${time}`).getTime() - random;
+    return moment(unix).format("HH:mm:ss");
+  }
 
   $(document).ready(function() {
 
@@ -319,8 +303,8 @@
 
     // 初始化
     try {
-      var autoClockinTime = localStorage.getItem('auto-clockin-time') || DEFAULT_CLOCKIN_TIME;
-      var autoClockoutTime = localStorage.getItem('auto-clockout-time') || DEFAULT_CLOCKOUT_TIME;
+      const autoClockinTime = localStorage.getItem('auto-clockin-time') || DEFAULT_CLOCKIN_TIME;
+      const autoClockoutTime = localStorage.getItem('auto-clockout-time') || DEFAULT_CLOCKOUT_TIME;
 
       // 初始化上班打卡
       info.timeFrom = autoClockinTime;
@@ -352,11 +336,24 @@
 
     // 设置上班打卡时间
     autoClockin.on('blur', function(e) {
+      // const timeArr = (autoClockin.val() || '0').trim().split(/\s+/);
+      // if (timeArr[0].trim()) {
+      //   const time = moment(timeArr[0].trim(), 'HH:mm:ss', true);
+      //   const timeStr = time.isValid() ? time.format("HH:mm:ss") : DEFAULT_CLOCKIN_TIME;
+      //   var from = [];
+      //   if (timeArr[1].trim()) {
+      //     from = timeArr[1].trim().match(/\-\s*(\d+)*/)
+      //     if (from && from[1]) {
+      //       randomFrom = from[1]
+      //     }
+      //   }
+      //   localStorage.setItem('auto-clockin-time', timeStr);
+      //   autoClockin.val(`${timeStr}`);
+      //   info.timeFrom = timeStr;
+      // }
+
       const time = moment(autoClockin.val() || 0, 'HH:mm:ss', true);
-      var timeStr = DEFAULT_CLOCKIN_TIME;
-      if (time.isValid()) {
-        timeStr = time.format("HH:mm:ss");
-      }
+      const timeStr = time.isValid() ? time.format("HH:mm:ss") : DEFAULT_CLOCKIN_TIME;
       localStorage.setItem('auto-clockin-time', timeStr);
       autoClockin.val(timeStr);
       info.timeFrom = timeStr;
@@ -365,14 +362,60 @@
     // 设置下班打卡时间
     autoClockout.on('blur', function(e) {
       const time = moment(autoClockout.val() || 0, 'HH:mm:ss', true);
-      var timeStr = DEFAULT_CLOCKOUT_TIME;
-      if (time.isValid()) {
-        timeStr = time.format("HH:mm:ss");
-      }
+      const timeStr = time.isValid() ? time.format("HH:mm:ss") : DEFAULT_CLOCKOUT_TIME;
       localStorage.setItem('auto-clockout-time', timeStr);
       autoClockout.val(timeStr);
       info.timeTo = timeStr;
     });
+
+    // 每分钟判断一次，重置，上班打卡，下班打卡
+    const jobClock = new CronJob('0 */1 * * * 1-5', function() {
+      const curDateTime = moment(new Date());
+      const today = curDateTime.format("YYYY-MM-DD");
+
+      // 排除周六周日
+      // TODO 
+      // if (curDateTime.weekday() === 6 || curDateTime.weekday() === 0) {
+      //   return;
+      // }
+
+      // 每天重置
+      if (info.today  !== today) {
+        checkThenRest();
+        info.today = today;
+
+        // 根据时间范围，默认是打卡时间往后延迟9分钟，设置一个随机的打卡时间
+        try {
+          const autoClockinTime = localStorage.getItem('auto-clockin-time') || DEFAULT_CLOCKIN_TIME;
+          const autoClockoutTime = localStorage.getItem('auto-clockout-time') || DEFAULT_CLOCKOUT_TIME;
+          const randomTimeFrom = getRandomTime(randomFrom, today, autoClockinTime);
+          const randomTimeTo = getRandomTime(randomTo, today, autoClockoutTime);
+          // 设置范围，随机一个时间
+          autoClockin.val(randomTimeFrom);
+          info.timeFrom = randomTimeFrom;
+          // 设置范围，随机一个时间
+          autoClockout.val(randomTimeTo);
+          info.timeTo = randomTimeTo;
+        } catch(e) {
+          return;
+        }
+      }
+
+      // 上班打卡
+      // TODO 最好在判断一下是否超过上班时间
+      if (!info.clockin && info.from && curDateTime.isAfter(info.from)) {
+        checkThenReg('clockin');
+        // info.clockin = true;
+        return
+      }
+
+      // 下班打卡
+      if (!info.clockout && info.to && curDateTime.isAfter(info.to)) {
+        checkThenReg('clockout');
+        // info.clockout = true;
+      }
+    }, null, true, 'Asia/Shanghai');
+
   })
 </script>
 </html>
