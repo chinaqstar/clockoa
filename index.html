@@ -229,6 +229,7 @@
         registered('clockin', status.clockinTime);
         info.clockin = true;
       } else {
+        info.clockin = false;
         reset('clockin');
       }
 
@@ -236,6 +237,7 @@
         registered('clockout', status.clockoutTime);
         info.clockout = true;
       } else {
+        info.clockout = false;
         reset('clockout');
       }
 
@@ -285,12 +287,14 @@
 
     // 每天重置
     if (info.today  !== today) {
-      reset('clockin');
-      reset('clockout');
-      reTimes = 0;
+      checkThenRest();
       info.today = today;
-      info.clockin = false;
-      info.clockout = false;
+      // TODO 全部放在checkThenRest中了，之后可直接删除
+      // reset('clockin');
+      // reset('clockout');
+      // reTimes = 0;
+      // info.clockin = false;
+      // info.clockout = false;
     }
 
     // 上班打卡
@@ -313,6 +317,24 @@
     var autoClockin = $('.auto-clockin-time');
     var autoClockout = $('.auto-clockout-time');
 
+    // 初始化
+    try {
+      var autoClockinTime = localStorage.getItem('auto-clockin-time') || DEFAULT_CLOCKIN_TIME;
+      var autoClockoutTime = localStorage.getItem('auto-clockout-time') || DEFAULT_CLOCKOUT_TIME;
+
+      // 初始化上班打卡
+      info.timeFrom = autoClockinTime;
+      localStorage.setItem('auto-clockin-time', autoClockinTime);
+      autoClockin.val(autoClockinTime);
+
+      // 初始化下班打卡
+      info.timeTo = autoClockoutTime;
+      localStorage.setItem('auto-clockout-time', autoClockoutTime);
+      autoClockout.val(autoClockoutTime);
+    } catch(e) {
+      alert(e);
+    }
+
     // 重置
     checkThenRest();
 
@@ -328,24 +350,28 @@
       window.close();
     });
 
+    // 设置上班打卡时间
     autoClockin.on('blur', function(e) {
-      const time = moment(autoClockin.val() || 0, 'HH:mm:ss', true)
-      var timeStr = DEFAULT_CLOCKIN_TIME
+      const time = moment(autoClockin.val() || 0, 'HH:mm:ss', true);
+      var timeStr = DEFAULT_CLOCKIN_TIME;
       if (time.isValid()) {
-        timeStr = time.format("HH:mm:ss")
+        timeStr = time.format("HH:mm:ss");
       }
-      autoClockin.val(timeStr)
-      info.timeFrom = timeStr
+      localStorage.setItem('auto-clockin-time', timeStr);
+      autoClockin.val(timeStr);
+      info.timeFrom = timeStr;
     });
 
+    // 设置下班打卡时间
     autoClockout.on('blur', function(e) {
-      const time = moment(autoClockout.val() || 0, 'HH:mm:ss', true)
-      var timeStr = DEFAULT_CLOCKOUT_TIME
+      const time = moment(autoClockout.val() || 0, 'HH:mm:ss', true);
+      var timeStr = DEFAULT_CLOCKOUT_TIME;
       if (time.isValid()) {
-        timeStr = time.format("HH:mm:ss")
+        timeStr = time.format("HH:mm:ss");
       }
-      autoClockout.val(timeStr)
-      info.timeTo = timeStr
+      localStorage.setItem('auto-clockout-time', timeStr);
+      autoClockout.val(timeStr);
+      info.timeTo = timeStr;
     });
   })
 </script>
