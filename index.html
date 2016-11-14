@@ -166,6 +166,7 @@
   const reg = require('./clock/src/index.js');
   const timeCheck = require('./clock/src/timeCheck.js');
   const moment = require('moment');
+  const notifier = require('node-notifier');
 
   const DEFAULT_CLOCKIN_TIME = '08:55:00';
   const DEFAULT_CLOCKOUT_TIME = '18:02:00';
@@ -186,7 +187,7 @@
     get() {
       return `${this.today} ${this.timeFrom}`
     }
-  })
+  });
 
   // 下班预设打卡时间 2016-11-16 18:02:00
   Object.defineProperty(info, 'to', {
@@ -195,7 +196,7 @@
     get() {
       return `${this.today} ${this.timeTo}`
     }
-  })
+  });
 
   // view，打卡之后
   const registered = (name, time) => {
@@ -259,6 +260,10 @@
           registered(name, status.clockinTime);
           info.clockin = true;
           reTimes = 0;
+          notifier.notify({
+            title: '打卡',
+            message: `【${info.timeFrom}】打卡成功(^_^)`
+          });
         } else {
           reTimes++;
           reg('on').then(() => {
@@ -272,6 +277,10 @@
           registered(name, status.clockoutTime);
           info.clockout = true;
           reTimes = 0;
+          notifier.notify({
+            title: '打卡',
+            message: `【${info.timeTo}】打卡成功(^_^)`
+          });
         } else {
           reTimes++;
           reg('off').then(() => {

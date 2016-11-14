@@ -9,7 +9,8 @@
     "iconv-lite": "^0.4.13",
     "promise": "^7.1.1",
     "request": "^2.74.0",
-    "small2": "^0.1.5"
+    "small2": "^0.1.5",
+    "node-notifier": "^4.6.1"
   },
   "devDependencies": {
     "electron-packager": "^5.1.0",
