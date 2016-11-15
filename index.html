@@ -262,7 +262,7 @@
           reTimes = 0;
           notifier.notify({
             title: '打卡',
-            message: `【${info.timeFrom}】打卡成功(^_^)`
+            message: `【${status.clockinTime}】打卡成功(^_^)`
           });
         } else {
           reTimes++;
@@ -279,7 +279,7 @@
           reTimes = 0;
           notifier.notify({
             title: '打卡',
-            message: `【${info.timeTo}】打卡成功(^_^)`
+            message: `【${status.clockoutTime}】打卡成功(^_^)`
           });
         } else {
           reTimes++;
